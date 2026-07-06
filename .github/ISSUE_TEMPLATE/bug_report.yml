@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a problem with a plugin or the marketplace itself.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for filing a report. Please fill out the fields below.
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin
+      description: Which plugin is affected? Use "marketplace" for a catalog-level issue.
+      placeholder: my-plugin
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The commands you ran, e.g. how you added the marketplace and installed the plugin.
+      render: shell
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Claude Code version
+      description: Output of `claude --version`.
+      placeholder: 2.1.201
+    validations:
+      required: false

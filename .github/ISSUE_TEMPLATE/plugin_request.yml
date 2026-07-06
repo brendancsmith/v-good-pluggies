@@ -1,0 +1,17 @@
+name: Plugin request or idea
+description: Suggest a new plugin or an enhancement to an existing one.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed plugin or change
+      description: What would it do, and which components (skills, agents, commands, hooks, MCP/LSP servers)?
+    validations:
+      required: true

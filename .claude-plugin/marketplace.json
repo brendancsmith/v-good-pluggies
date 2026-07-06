@@ -1,0 +1,10 @@
+{
+  "name": "v-good-pluggies",
+  "owner": {
+    "name": "Brendan Smith",
+    "email": "mail@brendansmith.ai"
+  },
+  "description": "Brendan Smith's personal Claude Code plugins.",
+  "version": "0.0.1",
+  "plugins": []
+}
