@@ -41,19 +41,22 @@ reference their location.
 
 ## Setup
 
-Markdown is linted by
-[`markdownlint-cli2`](https://github.com/DavidAnson/markdownlint-cli2) through
-[pre-commit](https://pre-commit.com), reading the rules in `.markdownlint.yaml`.
-Install the hook once per clone:
+[pre-commit](https://pre-commit.com) runs the commit-time checks: Markdown is
+linted by [`markdownlint-cli2`](https://github.com/DavidAnson/markdownlint-cli2)
+(rules in `.markdownlint.yaml`), JSON and YAML manifests are parsed, and any
+touched plugin or the marketplace manifest is validated with
+`claude plugin validate --strict` (via `scripts/validate-plugins.sh`). Install
+the hooks once per clone:
 
 ```zsh
 uv tool install pre-commit          # user-wide, once
 pre-commit install --install-hooks  # per clone — installs .git/hooks/pre-commit
 ```
 
-Every commit then lints staged Markdown and blocks on violations. Run
-`pre-commit run --all-files` to check the whole tree. The hook only reports
-issues — fix them in your editor's markdownlint integration, then re-commit.
+Every commit then runs those checks against the staged files and blocks on
+violations. Run `pre-commit run --all-files` to check the whole tree. The
+plugin-validation step skips with a notice when the Claude Code CLI is not on
+`PATH`; CI enforces it regardless in its dedicated `validate` job.
 
 ## Adding a plugin
 
@@ -123,7 +126,8 @@ claude plugin install <plugin>@v-good-pluggies
 
 ## Validating
 
-Before opening a PR, validate every plugin you touched:
+The pre-commit hook validates the marketplace and every touched plugin with
+`--strict` on each commit. To validate a single plugin by hand:
 
 ```zsh
 claude plugin validate plugins/<plugin> --strict

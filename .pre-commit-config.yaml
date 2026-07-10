@@ -8,3 +8,11 @@ repos:
     rev: v0.23.0
     hooks:
       - id: markdownlint-cli2
+  - repo: local
+    hooks:
+      - id: claude-plugin-validate
+        name: claude plugin validate (strict)
+        entry: scripts/validate-plugins.sh
+        language: script
+        pass_filenames: false
+        files: '^(\.claude-plugin/|plugins/)'
