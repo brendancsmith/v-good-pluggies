@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Validate the marketplace manifest and every plugin with `claude plugin
-# validate --strict`. Run by the pre-commit hook and usable by hand.
+# Validate the marketplace manifest (non-strict, matching CI: an empty
+# `plugins` array warns, and --strict turns warnings into errors) and every
+# plugin with `claude plugin validate --strict`. Run by the pre-commit hook
+# and usable by hand.
 #
 # When the Claude Code CLI is not on PATH this skips with a notice instead of
 # failing: the marketplace and plugins are still enforced by the dedicated
@@ -16,8 +18,8 @@ fi
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 
-echo "Validating marketplace manifest (strict)…"
-claude plugin validate --strict .
+echo "Validating marketplace manifest…"
+claude plugin validate .
 
 shopt -s nullglob
 plugins=(plugins/*/.claude-plugin/plugin.json)

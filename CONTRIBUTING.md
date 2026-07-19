@@ -43,10 +43,10 @@ reference their location.
 
 [pre-commit](https://pre-commit.com) runs the commit-time checks: Markdown is
 linted by [`markdownlint-cli2`](https://github.com/DavidAnson/markdownlint-cli2)
-(rules in `.markdownlint.yaml`), JSON and YAML manifests are parsed, and any
-touched plugin or the marketplace manifest is validated with
-`claude plugin validate --strict` (via `scripts/validate-plugins.sh`). Install
-the hooks once per clone:
+(rules in `.markdownlint.yaml`), JSON and YAML manifests are parsed, and
+`scripts/validate-plugins.sh` validates the marketplace manifest plus every
+plugin with `claude plugin validate` (`--strict` per plugin). Install the
+hooks once per clone:
 
 ```zsh
 uv tool install pre-commit          # user-wide, once
@@ -158,8 +158,8 @@ claude plugin install <plugin>@v-good-pluggies
 
 ## Validating
 
-The pre-commit hook validates the marketplace and every touched plugin with
-`--strict` on each commit. To validate a single plugin by hand:
+The pre-commit hook validates the marketplace and every touched plugin on
+each commit (plugins with `--strict`). To validate a single plugin by hand:
 
 ```zsh
 claude plugin validate plugins/<plugin> --strict
