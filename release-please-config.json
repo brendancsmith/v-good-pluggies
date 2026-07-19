@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "bump-minor-pre-major": true,
+  "tag-separator": "--",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "component": "marketplace",
+      "exclude-paths": ["plugins"],
+      "extra-files": [
+        {
+          "type": "json",
+          "path": ".claude-plugin/marketplace.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}
