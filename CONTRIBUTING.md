@@ -75,7 +75,7 @@ plugin-validation step skips with a notice when the Claude Code CLI is not on
 
    ```json
    "plugins/<plugin>": {
-     "release-type": "simple",
+     "release-type": "generic",
      "component": "<plugin>",
      "extra-files": [
        { "type": "json", "path": ".claude-plugin/plugin.json", "jsonpath": "$.version" }

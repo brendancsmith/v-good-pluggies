@@ -5,7 +5,7 @@
   "tag-separator": "--",
   "packages": {
     ".": {
-      "release-type": "simple",
+      "release-type": "generic",
       "component": "marketplace",
       "exclude-paths": ["plugins"],
       "extra-files": [
