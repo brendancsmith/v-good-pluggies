@@ -9,6 +9,13 @@ permissions:
   issues: write
   pull-requests: write
 
+# Serialize runs: concurrent release-please invocations can race on the
+# rolling release PR. Never cancel an in-flight run — a half-finished
+# release is worse than a queued one.
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
 jobs:
   release-please:
     name: release-please
