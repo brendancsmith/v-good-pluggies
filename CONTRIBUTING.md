@@ -43,10 +43,10 @@ reference their location.
 
 [pre-commit](https://pre-commit.com) runs the commit-time checks: Markdown is
 linted by [`markdownlint-cli2`](https://github.com/DavidAnson/markdownlint-cli2)
-(rules in `.markdownlint.yaml`), JSON and YAML manifests are parsed, and any
-touched plugin or the marketplace manifest is validated with
-`claude plugin validate --strict` (via `scripts/validate-plugins.sh`). Install
-the hooks once per clone:
+(rules in `.markdownlint.yaml`), JSON and YAML manifests are parsed, and
+`scripts/validate-plugins.sh` validates the marketplace manifest plus every
+plugin with `claude plugin validate` (`--strict` per plugin). Install the
+hooks once per clone:
 
 ```zsh
 uv tool install pre-commit          # user-wide, once
@@ -65,8 +65,25 @@ plugin-validation step skips with a notice when the Claude Code CLI is not on
    relevant, `homepage`/`repository`/`keywords`.
 2. Add whichever components the plugin needs (see [Layout](#layout) above).
 3. List the plugin in `.claude-plugin/marketplace.json`, with a `source`
-   pointing at `./plugins/<plugin>`.
+   pointing at `./plugins/<plugin>`. Don't set `version` there — the
+   `plugin.json` value is the single source of truth (see
+   [Versioning](#versioning)).
 4. Add a row for it in the README's Plugins table.
+5. Register the plugin with release-please: add a package entry to
+   `release-please-config.json` and seed its current version in
+   `.release-please-manifest.json`:
+
+   ```json
+   "plugins/<plugin>": {
+     "release-type": "simple",
+     "component": "<plugin>",
+     "extra-files": [
+       { "type": "json", "path": ".claude-plugin/plugin.json", "jsonpath": "$.version" }
+     ]
+   }
+   ```
+
+   The `extra-files` path is relative to the package directory.
 
 ## Naming
 
@@ -76,13 +93,30 @@ match between the two files.
 
 ## Versioning
 
-Both `marketplace.json` and each plugin's `plugin.json` carry a `version`
-field. Bump each following semver (`major.minor.patch`).
+Both `marketplace.json` and each plugin's `plugin.json` carry a semver
+`version` field (`major.minor.patch`). Bumps are automated by
+[release-please](https://github.com/googleapis/release-please): the `Release`
+workflow reads the conventional commits landing on `main`, keeps a rolling
+release PR per component, and merging that PR bumps the component's `version`
+field, updates its `CHANGELOG.md`, and tags a GitHub release
+(`<component>--v<version>`). Don't hand-edit `version` fields — land a
+conventional commit and merge the release PR it produces.
+
+Commit types map to bumps: `fix:` → patch, `feat:` → minor, and a `!` suffix
+or `BREAKING CHANGE:` footer → major (minor while the component is still
+`0.x`).
+
+Release PRs are opened with the workflow's default `GITHUB_TOKEN`, whose
+events don't trigger other workflows — CI checks don't run on the release PR
+itself. Validation still gates every commit that feeds it, and runs again on
+`main` once it merges.
 
 ### `marketplace.json`
 
 The top-level `version` has no functional effect — it doesn't gate updates or
-invalidate caches. It's informational only, describing this repo as a whole:
+invalidate caches. It's informational only, describing the catalog as a
+whole. The root `marketplace` component tracks every path except `plugins/`,
+so catalog-level changes drive it:
 
 - **major** — a plugin removed, or renamed without a `renames` entry, or a
   restructure that breaks existing installs.
@@ -90,21 +124,19 @@ invalidate caches. It's informational only, describing this repo as a whole:
   installs auto-migrate, so it's non-breaking).
 - **patch** — any other manifest-only tweak (metadata, description, etc.).
 
-Bump it as a matter of convention for diagnosing marketplace installations.
-
 ### `plugin.json`
 
 Each plugin's own `version` drives update detection — it's what
 `claude plugin marketplace update` compares to decide whether a user gets a
-new release. Bump it on every release that changes the plugin:
+new release. Keep the version only in `plugin.json`: a `version` set in the
+plugin's marketplace entry is silently shadowed by the `plugin.json` value,
+so a stale copy there can mask a release. Each plugin is its own
+release-please package and versions independently:
 
 - **major** — a removed or renamed command/skill/agent, or a changed
   required config field.
 - **minor** — a backward-compatible addition (new command/skill/agent).
 - **patch** — a fix with no new or removed surface area.
-
-Omitting `version` entirely means every git commit to the plugin counts as a
-new version instead.
 
 ## Testing locally
 
@@ -126,8 +158,8 @@ claude plugin install <plugin>@v-good-pluggies
 
 ## Validating
 
-The pre-commit hook validates the marketplace and every touched plugin with
-`--strict` on each commit. To validate a single plugin by hand:
+The pre-commit hook validates the marketplace and every touched plugin on
+each commit (plugins with `--strict`). To validate a single plugin by hand:
 
 ```zsh
 claude plugin validate plugins/<plugin> --strict
@@ -148,5 +180,9 @@ lets through as warnings.
   marketplace- or repo-wide changes.
 - Use conventional-commit-style messages (`feat:`, `fix:`, `docs:`, `chore:`,
   …) and branch names (`feature/<slug>`, `fix/<slug>`, …).
+- PR titles follow the same conventional-commit format — the
+  `Conventional-commit title` check enforces it, and squash merges use the PR
+  title as the commit message release-please reads. Scope plugin changes to their plugin's paths;
+  release-please assigns commits to components by the files they touch.
 - Open PRs against `main`. Mention which command you ran to validate
   (`claude plugin validate`) in the PR description.

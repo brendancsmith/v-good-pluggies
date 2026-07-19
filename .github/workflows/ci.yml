@@ -22,6 +22,26 @@ jobs:
       - name: Run pre-commit
         run: uvx pre-commit run --all-files --show-diff-on-failure
 
+  release-dry-run:
+    name: Release dry run
+    # Prove the release-please config parses and computes releases before it
+    # lands on main and drives the real Release workflow. Reads the config
+    # from the PR branch over the API (no checkout), so fork PRs — whose
+    # branches don't exist in this repo — are skipped.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: release-please release-pr --dry-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          npx --yes release-please@17 release-pr --dry-run
+          --repo-url=${{ github.repository }}
+          --target-branch=${{ github.head_ref }}
+          --token="$GITHUB_TOKEN"
+
   validate:
     name: Validate marketplace
     runs-on: ubuntu-latest
