@@ -111,6 +111,36 @@ events don't trigger other workflows — CI checks don't run on the release PR
 itself. Validation still gates every commit that feeds it, and runs again on
 `main` once it merges.
 
+### Release flow
+
+A release PR is a rolling accumulator, not a per-change artifact:
+
+1. Ordinary PRs squash-merge into `main`; the conventional-commit PR title
+   becomes the commit message release-please parses.
+2. On every push to `main`, the `Release` workflow assigns each new commit to
+   a component by the paths it touches: anything outside `plugins/` feeds the
+   `marketplace` component, and `plugins/<plugin>/` feeds that plugin's
+   package.
+3. Each component with releasable commits (`fix:`, `feat:`, or a breaking
+   change — `chore:`/`ci:`/`docs:` don't count) gets its own release PR,
+   opened on first need and updated in place as further commits land: the
+   pending bump escalates to the highest change type seen, and the pending
+   changelog accumulates.
+4. Merging a release PR performs the release described above (version bump,
+   `CHANGELOG.md`, tag, GitHub release), and the cycle restarts.
+
+When the release PR merges is the release cadence — batch several feature
+PRs into one release, or release after every change. Two caveats:
+
+- Commits under `plugins/` are invisible to release-please until the plugin
+  is registered (step 5 of [Adding a plugin](#adding-a-plugin)). Register the
+  plugin in the same PR that introduces it, or its changes belong to no
+  component and never reach a release PR.
+- A component's first-ever release defaults to `1.0.0`: the seeded manifest
+  version only anchors once a matching release tag exists, and none does yet.
+  To start in `0.x` instead, set `"initial-version": "0.1.0"` in the
+  component's package entry in `release-please-config.json`.
+
 ### `marketplace.json`
 
 The top-level `version` has no functional effect — it doesn't gate updates or
